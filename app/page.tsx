@@ -21,7 +21,6 @@ import GameControls from '@/components/GameControls';
 import ClueInput from '@/components/ClueInput';
 import VotingPanel from '@/components/VotingPanel';
 import ResultsModal from '@/components/ResultsModal';
-import { Sparkles } from 'lucide-react';
 
 async function getAIResponse(
   action: 'clue' | 'discussion' | 'vote',
@@ -46,10 +45,7 @@ async function getAIResponse(
     }),
   });
 
-  if (!response.ok) {
-    throw new Error('Failed to get AI response');
-  }
-
+  if (!response.ok) throw new Error('Failed to get AI response');
   const data = await response.json();
   return data.response;
 }
@@ -65,7 +61,6 @@ export default function Home() {
   const isHumanTurn = currentPlayer?.type === 'human';
   const voteCounts = getVoteResults(gameState);
 
-  // Handle AI turns automatically
   const processAITurn = useCallback(async () => {
     if (isProcessing) return;
     
@@ -76,7 +71,6 @@ export default function Home() {
     setThinkingPlayerId(player.id);
 
     try {
-      // Add a small delay for visual effect
       await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
 
       const clue = await getAIResponse(
@@ -91,7 +85,6 @@ export default function Home() {
       setGameState(prev => addClue(prev, player.id, clue));
     } catch (error) {
       console.error('AI clue error:', error);
-      // Fallback clue if AI fails
       const fallbackClues = ['thing', 'object', 'item', 'stuff', 'something'];
       const fallback = fallbackClues[Math.floor(Math.random() * fallbackClues.length)];
       setGameState(prev => addClue(prev, player.id, fallback));
@@ -101,7 +94,6 @@ export default function Home() {
     }
   }, [gameState, isProcessing]);
 
-  // Process AI discussion
   const processAIDiscussion = useCallback(async () => {
     if (isProcessing) return;
     setIsProcessing(true);
@@ -127,7 +119,7 @@ export default function Home() {
       } catch (error) {
         console.error('AI discussion error:', error);
         setGameState(prev => 
-          addDiscussionMessage(prev, player.id, "Hmm, I'm not sure who to suspect...")
+          addDiscussionMessage(prev, player.id, "I'm not sure who to suspect...")
         );
       }
     }
@@ -135,13 +127,11 @@ export default function Home() {
     setThinkingPlayerId(null);
     setIsProcessing(false);
     
-    // Move to voting after discussion
     setTimeout(() => {
       setGameState(prev => startVoting(prev));
     }, 1500);
   }, [gameState, isProcessing]);
 
-  // Process AI voting
   const processAIVoting = useCallback(async () => {
     if (isProcessing) return;
     setIsProcessing(true);
@@ -165,7 +155,6 @@ export default function Home() {
           gameState.discussion
         );
 
-        // Find the player by name
         const votedPlayer = gameState.players.find(
           p => p.name.toLowerCase() === votedName.toLowerCase() && p.id !== player.id
         );
@@ -173,14 +162,12 @@ export default function Home() {
         if (votedPlayer) {
           setGameState(prev => addVote(prev, player.id, votedPlayer.id));
         } else {
-          // Fallback: vote for random other player
           const otherPlayers = gameState.players.filter(p => p.id !== player.id);
           const randomPlayer = otherPlayers[Math.floor(Math.random() * otherPlayers.length)];
           setGameState(prev => addVote(prev, player.id, randomPlayer.id));
         }
       } catch (error) {
         console.error('AI vote error:', error);
-        // Fallback vote
         const otherPlayers = gameState.players.filter(p => p.id !== player.id);
         const randomPlayer = otherPlayers[Math.floor(Math.random() * otherPlayers.length)];
         setGameState(prev => addVote(prev, player.id, randomPlayer.id));
@@ -191,21 +178,18 @@ export default function Home() {
     setIsProcessing(false);
   }, [gameState, isProcessing]);
 
-  // Auto-process AI turns during clue round
   useEffect(() => {
     if (gameState.phase === 'clue-round' && !isHumanTurn && !isProcessing) {
       processAITurn();
     }
   }, [gameState.phase, gameState.currentPlayerIndex, isHumanTurn, isProcessing, processAITurn]);
 
-  // Auto-process discussion phase
   useEffect(() => {
     if (gameState.phase === 'discussion' && gameState.discussion.length === 0 && !isProcessing) {
       processAIDiscussion();
     }
   }, [gameState.phase, gameState.discussion.length, isProcessing, processAIDiscussion]);
 
-  // Auto-process AI voting
   useEffect(() => {
     if (gameState.phase === 'voting' && !isProcessing) {
       const humanVoted = humanPlayer ? hasPlayerVoted(gameState, humanPlayer.id) : true;
@@ -218,7 +202,6 @@ export default function Home() {
     }
   }, [gameState, humanPlayer, isProcessing, processAIVoting]);
 
-  // Check for reveal phase
   useEffect(() => {
     if (gameState.phase === 'reveal') {
       setTimeout(() => {
@@ -227,7 +210,6 @@ export default function Home() {
     }
   }, [gameState.phase]);
 
-  // Show results modal
   useEffect(() => {
     if (gameState.phase === 'results') {
       setTimeout(() => {
@@ -260,65 +242,78 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      {/* Background decoration */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }} />
-      </div>
-
-      <div className="relative z-10 container mx-auto px-4 py-8">
-        {/* Header */}
-        <motion.header
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8"
-        >
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <Sparkles className="w-8 h-8 text-yellow-400" />
-            <h1 className="text-4xl font-bold text-white">AI Impostor</h1>
-            <Sparkles className="w-8 h-8 text-yellow-400" />
-          </div>
-          <p className="text-gray-400">
-            Can you spot the AI that&apos;s bluffing?
-          </p>
-        </motion.header>
-
-        {/* Game controls for lobby */}
-        {gameState.phase === 'lobby' && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center justify-center min-h-[60vh]"
-          >
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <header className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-lg border-b border-neutral-100">
+        <div className="max-w-4xl mx-auto px-6 h-14 flex items-center justify-between">
+          <span className="text-black font-medium">Impostor</span>
+          {gameState.phase !== 'lobby' && (
             <GameControls
               onStartGame={handleStartGame}
               onResetGame={handleResetGame}
-              isGameInProgress={false}
+              isGameInProgress={true}
             />
-          </motion.div>
+          )}
+        </div>
+      </header>
+
+      <main className="pt-14">
+        {/* Lobby */}
+        {gameState.phase === 'lobby' && (
+          <motion.section
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="min-h-[calc(100vh-56px)] flex flex-col items-center justify-center px-6"
+          >
+            <motion.h1
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.6 }}
+              className="text-black text-5xl sm:text-6xl font-semibold text-center mb-3 tracking-tight"
+            >
+              Impostor
+            </motion.h1>
+            
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+              className="text-neutral-500 text-lg text-center mb-10"
+            >
+              You against three AIs
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.6 }}
+            >
+              <GameControls
+                onStartGame={handleStartGame}
+                onResetGame={handleResetGame}
+                isGameInProgress={false}
+              />
+            </motion.div>
+          </motion.section>
         )}
 
-        {/* Game in progress */}
+        {/* Game */}
         {gameState.phase !== 'lobby' && (
-          <>
-            {/* Game board */}
+          <section className="py-12 px-6">
             <GameBoard
               gameState={gameState}
               thinkingPlayerId={thinkingPlayerId}
               voteCounts={voteCounts}
             />
 
-            {/* Human input area */}
             <AnimatePresence mode="wait">
-              {/* Clue input */}
               {gameState.phase === 'clue-round' && isHumanTurn && humanPlayer && (
                 <motion.div
                   key="clue-input"
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="mt-8"
+                  exit={{ opacity: 0, y: -10 }}
+                  className="mt-12"
                 >
                   <ClueInput
                     onSubmit={handleHumanClue}
@@ -329,44 +324,37 @@ export default function Home() {
                 </motion.div>
               )}
 
-              {/* Waiting message during AI turn */}
               {gameState.phase === 'clue-round' && !isHumanTurn && (
                 <motion.div
                   key="waiting"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="mt-8 text-center"
+                  className="mt-12 text-center"
                 >
-                  <p className="text-gray-400">
-                    Waiting for {currentPlayer?.name} to give a clue...
-                  </p>
+                  <p className="text-neutral-400">Waiting for {currentPlayer?.name}</p>
                 </motion.div>
               )}
 
-              {/* Discussion waiting */}
               {gameState.phase === 'discussion' && isProcessing && (
                 <motion.div
                   key="discussion-waiting"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="mt-8 text-center"
+                  className="mt-12 text-center"
                 >
-                  <p className="text-gray-400">
-                    The AIs are discussing their suspicions...
-                  </p>
+                  <p className="text-neutral-400">The AIs are discussing...</p>
                 </motion.div>
               )}
 
-              {/* Voting panel */}
               {gameState.phase === 'voting' && humanPlayer && (
                 <motion.div
                   key="voting"
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="mt-8"
+                  exit={{ opacity: 0, y: -10 }}
+                  className="mt-12"
                 >
                   <VotingPanel
                     players={gameState.players}
@@ -379,38 +367,21 @@ export default function Home() {
                 </motion.div>
               )}
 
-              {/* Reveal phase */}
               {gameState.phase === 'reveal' && (
                 <motion.div
                   key="reveal"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="mt-8 text-center"
+                  className="mt-12 text-center"
                 >
-                  <motion.p
-                    animate={{ scale: [1, 1.1, 1] }}
-                    transition={{ repeat: Infinity, duration: 1 }}
-                    className="text-white text-xl font-bold"
-                  >
-                    Revealing the impostor...
-                  </motion.p>
+                  <p className="text-black text-lg">Revealing...</p>
                 </motion.div>
               )}
             </AnimatePresence>
-
-            {/* Reset button */}
-            <div className="mt-8 text-center">
-              <GameControls
-                onStartGame={handleStartGame}
-                onResetGame={handleResetGame}
-                isGameInProgress={true}
-              />
-            </div>
-          </>
+          </section>
         )}
 
-        {/* Results modal */}
         <ResultsModal
           isOpen={showResults}
           winner={gameState.winner}
@@ -420,7 +391,7 @@ export default function Home() {
           humanIsImpostor={humanPlayer?.isImpostor || false}
           onPlayAgain={handleStartGame}
         />
-      </div>
+      </main>
     </div>
   );
 }

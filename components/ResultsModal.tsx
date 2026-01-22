@@ -1,8 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Player, Vote, PLAYER_COLORS } from '@/types/game';
-import { Trophy, Skull, RotateCcw, Users, Eye } from 'lucide-react';
+import { Player, Vote } from '@/types/game';
 
 interface ResultsModalProps {
   isOpen: boolean;
@@ -25,14 +24,12 @@ export default function ResultsModal({
 }: ResultsModalProps) {
   const impostor = players.find(p => p.isImpostor);
   
-  // Count votes per player
   const voteCounts = new Map<string, number>();
   players.forEach(p => voteCounts.set(p.id, 0));
   votes.forEach(vote => {
     voteCounts.set(vote.suspectId, (voteCounts.get(vote.suspectId) || 0) + 1);
   });
 
-  // Determine if human won
   const humanWon = humanIsImpostor ? winner === 'impostor' : winner === 'crew';
 
   return (
@@ -42,82 +39,45 @@ export default function ResultsModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ backgroundColor: 'rgba(0,0,0,0.8)' }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/90 backdrop-blur-sm"
         >
           <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
+            initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            transition={{ type: 'spring', bounce: 0.3 }}
-            className="w-full max-w-lg bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl p-8 shadow-2xl"
+            exit={{ scale: 0.95, opacity: 0 }}
+            transition={{ type: 'spring', bounce: 0.2 }}
+            className="w-full max-w-sm bg-white rounded-2xl p-6 shadow-2xl border border-neutral-200"
           >
-            {/* Winner announcement */}
+            {/* Result */}
             <motion.div
-              initial={{ y: -20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="text-center mb-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.1 }}
+              className="text-center mb-6"
             >
-              <motion.div
-                animate={{ 
-                  rotate: [0, -10, 10, -10, 10, 0],
-                  scale: [1, 1.1, 1]
-                }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-                className={`w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center ${
-                  humanWon
-                    ? 'bg-gradient-to-br from-yellow-400 to-orange-500'
-                    : 'bg-gradient-to-br from-gray-600 to-gray-700'
-                }`}
-              >
-                {humanWon ? (
-                  <Trophy className="w-10 h-10 text-white" />
-                ) : (
-                  <Skull className="w-10 h-10 text-white" />
-                )}
-              </motion.div>
-              
-              <h2 className={`text-3xl font-bold mb-2 ${
-                humanWon ? 'text-yellow-400' : 'text-gray-400'
-              }`}>
-                {humanWon ? 'You Win!' : 'You Lose!'}
+              <p className="text-5xl mb-3">{humanWon ? '○' : '×'}</p>
+              <h2 className="text-2xl font-semibold text-black mb-1">
+                {humanWon ? 'You won' : 'You lost'}
               </h2>
-              
-              <p className="text-gray-300">
-                {winner === 'crew' ? (
-                  <>
-                    <Users className="inline w-5 h-5 mr-1" />
-                    The crew found the impostor!
-                  </>
-                ) : (
-                  <>
-                    <Eye className="inline w-5 h-5 mr-1" />
-                    The impostor escaped detection!
-                  </>
-                )}
+              <p className="text-neutral-500 text-sm">
+                {winner === 'crew' ? 'The crew found the impostor' : 'The impostor escaped'}
               </p>
             </motion.div>
 
-            {/* Impostor reveal */}
+            {/* Impostor */}
             {impostor && (
               <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.4 }}
-                className="mb-6"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="bg-neutral-50 rounded-xl p-3 mb-4"
               >
-                <p className="text-gray-400 text-sm text-center mb-3">
-                  The impostor was:
+                <p className="text-neutral-400 text-[11px] uppercase tracking-wider mb-2 text-center">
+                  The impostor
                 </p>
-                <div className={`p-4 rounded-xl bg-gradient-to-r ${
-                  PLAYER_COLORS[impostor.id as keyof typeof PLAYER_COLORS] || 'from-gray-500 to-gray-600'
-                } flex items-center justify-center gap-3`}>
-                  <span className="text-4xl">{impostor.avatar}</span>
-                  <span className="text-white text-xl font-bold">{impostor.name}</span>
-                  <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                    IMPOSTOR
-                  </span>
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-2xl">{impostor.avatar}</span>
+                  <span className="text-black font-medium">{impostor.name}</span>
                 </div>
               </motion.div>
             )}
@@ -125,53 +85,47 @@ export default function ResultsModal({
             {/* Secret word */}
             {secretWord && (
               <motion.div
-                initial={{ y: 10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                className="mb-6 text-center"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="text-center mb-4"
               >
-                <p className="text-gray-400 text-sm mb-2">
-                  The secret word was:
+                <p className="text-neutral-400 text-[11px] uppercase tracking-wider mb-1">
+                  The word
                 </p>
-                <p className="text-2xl font-bold text-emerald-400 uppercase tracking-wider">
-                  {secretWord}
-                </p>
+                <p className="text-black text-xl font-semibold">{secretWord}</p>
               </motion.div>
             )}
 
-            {/* Vote breakdown */}
+            {/* Votes */}
             <motion.div
-              initial={{ y: 10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.6 }}
-              className="mb-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="mb-6"
             >
-              <p className="text-gray-400 text-sm text-center mb-3">
-                Vote Results:
+              <p className="text-neutral-400 text-[11px] uppercase tracking-wider mb-3 text-center">
+                Votes
               </p>
               <div className="space-y-2">
                 {players
                   .sort((a, b) => (voteCounts.get(b.id) || 0) - (voteCounts.get(a.id) || 0))
                   .map((player) => {
                     const count = voteCounts.get(player.id) || 0;
-                    const percentage = (count / votes.length) * 100;
+                    const percentage = votes.length > 0 ? (count / votes.length) * 100 : 0;
                     return (
-                      <div key={player.id} className="relative">
+                      <div key={player.id}>
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-lg">{player.avatar}</span>
-                          <span className="text-white text-sm flex-1">{player.name}</span>
-                          <span className="text-gray-400 text-sm">
-                            {count} vote{count !== 1 ? 's' : ''}
-                          </span>
+                          <span className="text-base">{player.avatar}</span>
+                          <span className="text-black text-sm flex-1">{player.name}</span>
+                          <span className="text-neutral-400 text-sm">{count}</span>
                         </div>
-                        <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
+                        <div className="h-1 bg-neutral-100 rounded-full overflow-hidden">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${percentage}%` }}
-                            transition={{ delay: 0.8, duration: 0.5 }}
-                            className={`h-full ${
-                              player.isImpostor ? 'bg-red-500' : 'bg-blue-500'
-                            }`}
+                            transition={{ delay: 0.5, duration: 0.4 }}
+                            className="h-full bg-black rounded-full"
                           />
                         </div>
                       </div>
@@ -180,17 +134,15 @@ export default function ResultsModal({
               </div>
             </motion.div>
 
-            {/* Play again button */}
+            {/* Play again */}
             <motion.button
-              initial={{ y: 10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.8 }}
-              whileHover={{ scale: 1.02 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
               whileTap={{ scale: 0.98 }}
               onClick={onPlayAgain}
-              className="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:shadow-lg transition-shadow"
+              className="btn-primary w-full"
             >
-              <RotateCcw className="w-5 h-5" />
               Play Again
             </motion.button>
           </motion.div>

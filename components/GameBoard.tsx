@@ -3,7 +3,6 @@
 import { motion } from 'framer-motion';
 import { GameState } from '@/types/game';
 import PlayerCard from './PlayerCard';
-import { MessageCircle, Clock } from 'lucide-react';
 
 interface GameBoardProps {
   gameState: GameState;
@@ -20,38 +19,29 @@ export default function GameBoard({
 
   return (
     <div className="w-full max-w-4xl mx-auto">
-      {/* Round indicator */}
+      {/* Phase indicator */}
       {phase === 'clue-round' && (
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center mb-10"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
-            <Clock className="w-4 h-4 text-white" />
-            <span className="text-white font-medium">
-              Round {currentRound} of {totalRounds}
-            </span>
-          </div>
+          <p className="text-neutral-400 text-sm">Round {currentRound} of {totalRounds}</p>
         </motion.div>
       )}
 
-      {/* Discussion phase header */}
       {phase === 'discussion' && (
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center mb-10"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
-            <MessageCircle className="w-4 h-4 text-white" />
-            <span className="text-white font-medium">Discussion Phase</span>
-          </div>
+          <p className="text-black text-lg font-medium">Discussion</p>
         </motion.div>
       )}
 
-      {/* Player grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      {/* Players */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
         {players.map((player, index) => {
           const playerClues = clues.filter(c => c.playerId === player.id);
           const isCurrentTurn = phase === 'clue-round' && currentPlayerIndex === index && player.type === 'human';
@@ -74,33 +64,30 @@ export default function GameBoard({
         })}
       </div>
 
-      {/* Discussion messages */}
+      {/* Discussion */}
       {(phase === 'discussion' || phase === 'voting') && gameState.discussion.length > 0 && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="rounded-2xl p-4 mb-6"
-          style={{ backgroundColor: 'rgba(30, 27, 75, 0.8)' }}
+          className="bg-neutral-50 rounded-xl p-5 mb-8"
         >
-          <h3 className="text-gray-300 text-sm font-medium mb-3 flex items-center gap-2">
-            <MessageCircle className="w-4 h-4" />
-            Discussion
-          </h3>
-          <div className="space-y-3 max-h-48 overflow-y-auto">
+          <div className="space-y-4">
             {gameState.discussion.map((msg, index) => {
               const speaker = players.find(p => p.id === msg.playerId);
               return (
                 <motion.div
                   key={index}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.08 }}
                   className="flex gap-3"
                 >
-                  <span className="text-2xl">{speaker?.avatar}</span>
+                  <span className="text-xl w-8 h-8 bg-white rounded-full flex items-center justify-center flex-shrink-0">
+                    {speaker?.avatar}
+                  </span>
                   <div>
-                    <span className="text-white font-medium text-sm">{speaker?.name}</span>
-                    <p className="text-gray-300 text-sm">{msg.message}</p>
+                    <p className="text-black font-medium text-sm">{speaker?.name}</p>
+                    <p className="text-neutral-600 text-[15px]">{msg.message}</p>
                   </div>
                 </motion.div>
               );
@@ -109,42 +96,39 @@ export default function GameBoard({
         </motion.div>
       )}
 
-      {/* Clue history by round */}
+      {/* Clue history */}
       {clues.length > 0 && phase !== 'lobby' && phase !== 'setup' && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="rounded-2xl p-4"
-          style={{ backgroundColor: 'rgba(30, 27, 75, 0.8)' }}
+          className="border-t border-neutral-200 pt-8"
         >
-          <h3 className="text-gray-300 text-sm font-medium mb-3">
-            Clue History
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <p className="text-neutral-400 text-[11px] uppercase tracking-wider mb-5 text-center">
+            All Clues
+          </p>
+          <div className="grid grid-cols-3 gap-6 max-w-lg mx-auto">
             {[1, 2, 3].map((round) => {
               const roundClues = clues.filter(c => c.round === round);
-              if (roundClues.length === 0 && round > currentRound) return null;
+              const isFutureRound = round > currentRound;
               
               return (
-                <div 
-                  key={round} 
-                  className="rounded-xl p-3"
-                  style={{ backgroundColor: 'rgba(15, 23, 42, 0.6)' }}
-                >
-                  <p className="text-gray-400 text-xs mb-2">Round {round}</p>
-                  <div className="space-y-1">
+                <div key={round} className="text-center">
+                  <p className={`text-xs mb-2 ${isFutureRound ? 'text-neutral-200' : 'text-neutral-400'}`}>
+                    Round {round}
+                  </p>
+                  <div className="space-y-1.5">
                     {roundClues.length > 0 ? (
                       roundClues.map((clue, idx) => {
                         const player = players.find(p => p.id === clue.playerId);
                         return (
-                          <div key={idx} className="flex items-center gap-2">
-                            <span className="text-sm">{player?.avatar}</span>
-                            <span className="text-white text-sm font-medium">{clue.word}</span>
+                          <div key={idx} className="flex items-center justify-center gap-1.5">
+                            <span className="text-base">{player?.avatar}</span>
+                            <span className="text-black font-medium text-sm">{clue.word}</span>
                           </div>
                         );
                       })
                     ) : (
-                      <p className="text-gray-500 text-xs">Waiting...</p>
+                      <p className="text-neutral-200 text-sm">—</p>
                     )}
                   </div>
                 </div>

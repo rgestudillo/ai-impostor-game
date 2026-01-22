@@ -1,8 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Player, Clue, PLAYER_COLORS } from '@/types/game';
-import { Bot, User, Eye, EyeOff } from 'lucide-react';
+import { Player, Clue } from '@/types/game';
 
 interface PlayerCardProps {
   player: Player;
@@ -20,103 +19,79 @@ export default function PlayerCard({
   isCurrentTurn,
   isThinking = false,
   showImpostor = false,
-  isVoted = false,
   voteCount = 0,
 }: PlayerCardProps) {
-  const colorClass = PLAYER_COLORS[player.id as keyof typeof PLAYER_COLORS] || 'from-gray-500 to-gray-600';
+  const isHuman = player.type === 'human';
   
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`relative rounded-2xl p-4 bg-gradient-to-br ${colorClass} shadow-lg ${
-        isCurrentTurn ? 'ring-4 ring-white/50' : ''
+      transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+      className={`relative rounded-xl p-5 transition-all duration-200 ${
+        isCurrentTurn 
+          ? 'bg-black text-white' 
+          : 'bg-neutral-100'
       }`}
     >
-      {/* Current turn indicator */}
-      {isCurrentTurn && (
-        <motion.div
-          className="absolute -top-2 -right-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full"
-          animate={{ scale: [1, 1.1, 1] }}
-          transition={{ repeat: Infinity, duration: 1.5 }}
-        >
-          Your turn!
-        </motion.div>
-      )}
-
-      {/* Impostor reveal badge */}
+      {/* Impostor badge */}
       {showImpostor && player.isImpostor && (
         <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          className="absolute -top-2 -left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="absolute -top-2 -right-2 px-2 py-0.5 bg-black text-white text-[11px] font-medium rounded-full"
         >
-          <Eye className="w-3 h-3" />
-          Impostor!
+          Impostor
         </motion.div>
       )}
 
-      {/* Vote count badge */}
+      {/* Vote count */}
       {voteCount > 0 && (
         <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          className="absolute -top-2 right-2 bg-red-500 text-white text-sm font-bold w-6 h-6 rounded-full flex items-center justify-center"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="absolute -top-2 -right-2 w-6 h-6 bg-black text-white text-xs font-medium rounded-full flex items-center justify-center"
         >
           {voteCount}
         </motion.div>
       )}
 
       <div className="flex items-center gap-3 mb-3">
-        {/* Avatar */}
         <motion.div
-          className="text-4xl rounded-full w-14 h-14 flex items-center justify-center"
-          style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
-          animate={isThinking ? { rotate: [0, 10, -10, 0] } : {}}
-          transition={{ repeat: isThinking ? Infinity : 0, duration: 0.5 }}
+          animate={isThinking ? { scale: [1, 1.05, 1] } : {}}
+          transition={{ repeat: isThinking ? Infinity : 0, duration: 1.5 }}
+          className={`text-2xl w-11 h-11 rounded-full flex items-center justify-center ${
+            isCurrentTurn ? 'bg-white/10' : 'bg-white'
+          }`}
         >
           {player.avatar}
         </motion.div>
 
-        {/* Name and type */}
-        <div className="flex-1">
-          <h3 className="text-white font-bold text-lg">{player.name}</h3>
-          <div className="flex items-center gap-1 text-white/70 text-sm">
-            {player.type === 'ai' ? (
-              <>
-                <Bot className="w-4 h-4" />
-                <span className="capitalize">{player.personality}</span>
-              </>
-            ) : (
-              <>
-                <User className="w-4 h-4" />
-                <span>Human</span>
-              </>
-            )}
-          </div>
+        <div className="flex-1 min-w-0">
+          <h3 className={`font-medium text-[15px] ${isCurrentTurn ? 'text-white' : 'text-black'}`}>
+            {player.name}
+          </h3>
+          <p className={`text-[13px] ${isCurrentTurn ? 'text-white/60' : 'text-neutral-500'}`}>
+            {isHuman ? 'You' : player.personality}
+          </p>
         </div>
       </div>
 
-      {/* Thinking indicator */}
+      {/* Thinking */}
       {isThinking && (
         <motion.div
-          className="flex items-center gap-2 text-white/80 text-sm mb-2"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
+          className={`flex items-center gap-1.5 mb-2 ${isCurrentTurn ? 'text-white/60' : 'text-neutral-500'}`}
         >
-          <motion.span
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ repeat: Infinity, duration: 1.5 }}
-          >
-            Thinking...
-          </motion.span>
-          <div className="flex gap-1">
+          <span className="text-[13px]">Thinking</span>
+          <div className="flex gap-0.5">
             {[0, 1, 2].map(i => (
               <motion.div
                 key={i}
-                className="w-2 h-2 bg-white rounded-full"
-                animate={{ y: [0, -5, 0] }}
-                transition={{ repeat: Infinity, duration: 0.6, delay: i * 0.2 }}
+                className={`w-1 h-1 rounded-full ${isCurrentTurn ? 'bg-white' : 'bg-neutral-400'}`}
+                animate={{ opacity: [0.3, 1, 0.3] }}
+                transition={{ repeat: Infinity, duration: 1, delay: i * 0.15 }}
               />
             ))}
           </div>
@@ -125,16 +100,22 @@ export default function PlayerCard({
 
       {/* Clues */}
       {clues.length > 0 && (
-        <div className="mt-2 space-y-1">
-          <p className="text-white/60 text-xs uppercase tracking-wide">Clues:</p>
-          <div className="flex flex-wrap gap-2">
+        <div className="space-y-1.5">
+          <p className={`text-[11px] uppercase tracking-wider ${isCurrentTurn ? 'text-white/40' : 'text-neutral-400'}`}>
+            Clues
+          </p>
+          <div className="flex flex-wrap gap-1.5">
             {clues.map((clue, index) => (
               <motion.span
                 key={index}
-                initial={{ opacity: 0, scale: 0.8 }}
+                initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="px-2 py-1 rounded-lg text-white text-sm font-medium"
-                style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
+                transition={{ delay: index * 0.05 }}
+                className={`px-2.5 py-1 rounded-full text-[13px] font-medium ${
+                  isCurrentTurn 
+                    ? 'bg-white/10 text-white' 
+                    : 'bg-white text-black'
+                }`}
               >
                 {clue.word}
               </motion.span>
@@ -143,16 +124,15 @@ export default function PlayerCard({
         </div>
       )}
 
-      {/* Voted indicator */}
-      {isVoted && (
-        <motion.div
+      {/* Current turn */}
+      {isCurrentTurn && (
+        <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mt-2 text-white/70 text-xs flex items-center gap-1"
+          className="mt-3 text-[13px] text-white/60"
         >
-          <EyeOff className="w-3 h-3" />
-          Vote cast
-        </motion.div>
+          Your turn
+        </motion.p>
       )}
     </motion.div>
   );

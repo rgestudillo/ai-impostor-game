@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Player, Clue, PLAYER_COLORS } from '@/types/game';
-import { Check, Vote } from 'lucide-react';
+import { Player, Clue } from '@/types/game';
+import { Check } from 'lucide-react';
 
 interface VotingPanelProps {
   players: Player[];
@@ -33,27 +33,26 @@ export default function VotingPanel({
     setTimeout(() => {
       onVote(selectedPlayer);
       setIsConfirming(false);
-    }, 500);
+    }, 300);
   };
 
   if (hasVoted) {
     return (
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="text-center p-8 rounded-2xl"
-        style={{ backgroundColor: 'rgba(30, 27, 75, 0.8)' }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="text-center py-10"
       >
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          transition={{ type: 'spring', bounce: 0.5 }}
-          className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4"
+          transition={{ type: 'spring', bounce: 0.4 }}
+          className="w-12 h-12 bg-black rounded-full flex items-center justify-center mx-auto mb-3"
         >
-          <Check className="w-8 h-8 text-white" />
+          <Check className="w-6 h-6 text-white" strokeWidth={2.5} />
         </motion.div>
-        <h3 className="text-white text-xl font-bold mb-2">Vote Cast!</h3>
-        <p className="text-gray-400">Waiting for others to vote...</p>
+        <p className="text-black font-medium">Vote submitted</p>
+        <p className="text-neutral-400 text-sm">Waiting for others</p>
       </motion.div>
     );
   }
@@ -62,57 +61,62 @@ export default function VotingPanel({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="w-full max-w-2xl mx-auto"
+      transition={{ duration: 0.5 }}
+      className="w-full max-w-xl mx-auto"
     >
-      <div className="text-center mb-6">
-        <Vote className="w-10 h-10 text-white mx-auto mb-2" />
-        <h2 className="text-white text-2xl font-bold mb-1">Time to Vote!</h2>
-        <p className="text-gray-400">Who do you think is the impostor?</p>
+      <div className="text-center mb-8">
+        <h2 className="text-black text-2xl font-semibold mb-1">Who&apos;s the impostor?</h2>
+        <p className="text-neutral-500">Select who you think is bluffing</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-3 gap-3 mb-6">
         {otherPlayers.map((player) => {
           const playerClues = clues.filter(c => c.playerId === player.id);
-          const colorClass = PLAYER_COLORS[player.id as keyof typeof PLAYER_COLORS] || 'from-gray-500 to-gray-600';
           const isSelected = selectedPlayer === player.id;
 
           return (
             <motion.button
               key={player.id}
-              whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setSelectedPlayer(player.id)}
               disabled={disabled}
-              className={`relative p-4 rounded-xl bg-gradient-to-br ${colorClass} transition-all ${
-                isSelected ? 'ring-4 ring-white shadow-xl' : 'opacity-80 hover:opacity-100'
-              } ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+              className={`relative p-4 rounded-xl text-center transition-all duration-200 ${
+                isSelected 
+                  ? 'bg-black text-white' 
+                  : 'bg-neutral-100 hover:bg-neutral-200'
+              } ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
             >
               {isSelected && (
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="absolute -top-2 -right-2 w-6 h-6 bg-white rounded-full flex items-center justify-center"
+                  className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white border border-neutral-200 rounded-full flex items-center justify-center"
                 >
-                  <Check className="w-4 h-4 text-green-500" />
+                  <Check className="w-3 h-3 text-black" strokeWidth={3} />
                 </motion.div>
               )}
 
-              <div className="text-4xl mb-2">{player.avatar}</div>
-              <h3 className="text-white font-bold text-lg">{player.name}</h3>
+              <div className={`text-3xl mb-2 w-12 h-12 rounded-full flex items-center justify-center mx-auto ${
+                isSelected ? 'bg-white/10' : 'bg-white'
+              }`}>
+                {player.avatar}
+              </div>
               
-              <div className="mt-3 space-y-1">
-                <p className="text-white/60 text-xs uppercase">Clues:</p>
-                <div className="flex flex-wrap justify-center gap-1">
-                  {playerClues.map((clue, idx) => (
-                    <span
-                      key={idx}
-                      className="px-2 py-0.5 rounded text-white text-xs"
-                      style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
-                    >
-                      {clue.word}
-                    </span>
-                  ))}
-                </div>
+              <h3 className={`font-medium text-sm mb-2 ${isSelected ? 'text-white' : 'text-black'}`}>
+                {player.name}
+              </h3>
+              
+              <div className="flex flex-wrap justify-center gap-1">
+                {playerClues.map((clue, idx) => (
+                  <span
+                    key={idx}
+                    className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${
+                      isSelected ? 'bg-white/10 text-white' : 'bg-white text-black'
+                    }`}
+                  >
+                    {clue.word}
+                  </span>
+                ))}
               </div>
             </motion.button>
           );
@@ -120,31 +124,16 @@ export default function VotingPanel({
       </div>
 
       <motion.button
-        whileHover={{ scale: selectedPlayer ? 1.02 : 1 }}
-        whileTap={{ scale: selectedPlayer ? 0.98 : 1 }}
+        whileTap={selectedPlayer ? { scale: 0.98 } : {}}
         onClick={handleVote}
         disabled={!selectedPlayer || disabled || isConfirming}
-        className={`w-full py-4 rounded-xl font-bold text-lg transition-all ${
+        className={`w-full py-3.5 rounded-full text-[15px] font-medium transition-all duration-200 ${
           selectedPlayer
-            ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white cursor-pointer hover:shadow-lg'
-            : 'text-gray-500 cursor-not-allowed'
+            ? 'bg-black text-white'
+            : 'bg-neutral-100 text-neutral-300 cursor-not-allowed'
         }`}
-        style={!selectedPlayer ? { backgroundColor: 'rgba(30, 27, 75, 0.8)' } : {}}
       >
-        {isConfirming ? (
-          <span className="flex items-center justify-center gap-2">
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-              className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-            />
-            Casting Vote...
-          </span>
-        ) : selectedPlayer ? (
-          `Vote for ${players.find(p => p.id === selectedPlayer)?.name}`
-        ) : (
-          'Select a player to vote'
-        )}
+        {isConfirming ? 'Submitting...' : selectedPlayer ? `Vote for ${players.find(p => p.id === selectedPlayer)?.name}` : 'Select a player'}
       </motion.button>
     </motion.div>
   );
