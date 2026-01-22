@@ -27,10 +27,17 @@ export function createInitialGameState(): GameState {
   };
 }
 
-export function setupGame(state: GameState): GameState {
-  // Create all players
+export function setupGame(state: GameState, playerName: string = 'Player'): GameState {
+  // Create all players with custom human name
+  const humanPlayer: Player = {
+    ...HUMAN_PLAYER,
+    name: playerName,
+    isImpostor: false,
+    isEliminated: false,
+  };
+  
   const allPlayers: Player[] = [
-    { ...HUMAN_PLAYER, isImpostor: false, isEliminated: false },
+    humanPlayer,
     ...AI_PLAYERS.map(p => ({ ...p, isImpostor: false, isEliminated: false })),
   ];
 

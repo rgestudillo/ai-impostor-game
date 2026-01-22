@@ -92,7 +92,7 @@ export const AI_PLAYERS: Omit<Player, 'isImpostor' | 'isEliminated'>[] = [
 
 export const HUMAN_PLAYER: Omit<Player, 'isImpostor' | 'isEliminated'> = {
   id: 'human',
-  name: 'You',
+  name: 'Player',
   type: 'human',
   avatar: '👤',
 };

@@ -60,6 +60,8 @@ export default function Home() {
   const [thinkingPlayerId, setThinkingPlayerId] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [showNameInput, setShowNameInput] = useState(false);
+  const [playerName, setPlayerName] = useState('');
 
   const humanPlayer = gameState.players.find(p => p.type === 'human');
   const currentPlayer = getCurrentPlayer(gameState);
@@ -224,14 +226,34 @@ export default function Home() {
   }, [gameState.phase]);
 
   const handleStartGame = () => {
-    const newState = setupGame(gameState);
+    // Show name input first
+    setShowNameInput(true);
+  };
+
+  const handleNameSubmit = (name: string) => {
+    const trimmedName = name.trim() || 'Player';
+    setPlayerName(trimmedName);
+    setShowNameInput(false);
+    const newState = setupGame(createInitialGameState(), trimmedName);
     setGameState(startClueRound(newState));
     setShowResults(false);
+  };
+
+  const handlePlayAgain = () => {
+    // Use existing player name, skip name input
+    const name = playerName || 'Player';
+    const newState = setupGame(createInitialGameState(), name);
+    setGameState(startClueRound(newState));
+    setShowResults(false);
+    setThinkingPlayerId(null);
+    setIsProcessing(false);
   };
 
   const handleResetGame = () => {
     setGameState(createInitialGameState());
     setShowResults(false);
+    setShowNameInput(false);
+    setPlayerName('');
     setThinkingPlayerId(null);
     setIsProcessing(false);
   };
@@ -276,6 +298,67 @@ export default function Home() {
       </header>
 
       <main className="pt-12">
+        {/* Name Input Modal */}
+        <AnimatePresence>
+          {showNameInput && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-white/95 backdrop-blur-xl"
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                transition={{ type: 'spring', bounce: 0.2 }}
+                className="w-full max-w-sm text-center"
+              >
+                <h2 className="text-gray-900 text-[28px] font-semibold tracking-tight mb-2">
+                  What&apos;s your name?
+                </h2>
+                <p className="text-gray-500 text-[15px] mb-8">
+                  Enter a name for your character
+                </p>
+                
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleNameSubmit(playerName);
+                  }}
+                  className="space-y-4"
+                >
+                  <input
+                    type="text"
+                    value={playerName}
+                    onChange={(e) => setPlayerName(e.target.value)}
+                    placeholder="Enter your name"
+                    className="w-full px-6 py-4 bg-gray-50 border-2 border-transparent rounded-2xl text-gray-900 text-[17px] text-center placeholder-gray-400 focus:outline-none focus:border-gray-900 focus:bg-white transition-all duration-200"
+                    maxLength={12}
+                    autoComplete="off"
+                    autoFocus
+                  />
+                  
+                  <button
+                    type="submit"
+                    className="btn-primary w-full"
+                  >
+                    Start Game
+                  </button>
+                  
+                  <button
+                    type="button"
+                    onClick={() => setShowNameInput(false)}
+                    className="text-gray-400 text-[14px] hover:text-gray-600 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </form>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Lobby */}
         {gameState.phase === 'lobby' && (
           <motion.section
@@ -400,7 +483,7 @@ export default function Home() {
           votes={gameState.votes}
           secretWord={gameState.secretWord}
           humanIsImpostor={humanPlayer?.isImpostor || false}
-          onPlayAgain={handleStartGame}
+          onPlayAgain={handlePlayAgain}
         />
       </main>
 
