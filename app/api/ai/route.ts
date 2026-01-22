@@ -87,15 +87,33 @@ export async function POST(request: NextRequest) {
         );
     }
 
+    // Use more tokens for discussion, fewer for clues/votes
+    const maxTokens = action === 'discussion' ? 200 : 50;
+
     const { text } = await generateText({
-      model: google('gemini-2.5-flash'),
+      model: google('gemini-2.0-flash'),
       prompt,
-      maxOutputTokens: 100,
+      maxOutputTokens: maxTokens,
       temperature: 0.7,
     });
 
-    // Clean up the response
-    const cleanedText = text.trim().split('\n')[0].trim();
+    // Clean up the response based on action type
+    let cleanedText: string;
+    if (action === 'clue' || action === 'vote') {
+      // For clues and votes, just get the first word/name
+      cleanedText = text.trim().split('\n')[0].split(' ')[0].trim();
+    } else {
+      // For discussion, keep the full response (just trim whitespace)
+      cleanedText = text.trim();
+    }
+
+    // Log for debugging
+    console.log(`\n=== AI Response (${action}) ===`);
+    console.log(`Player: ${player.name} (${player.isImpostor ? 'IMPOSTOR' : 'crew'})`);
+    console.log(`Prompt: ${prompt}`);
+    console.log(`Raw response: "${text}"`);
+    console.log(`Cleaned response: "${cleanedText}"`);
+    console.log(`===============================\n`);
 
     return NextResponse.json({ response: cleanedText });
   } catch (error) {

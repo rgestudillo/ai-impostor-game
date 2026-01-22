@@ -92,13 +92,14 @@ export default function GameBoard({
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1, duration: 0.4 }}
-                  className="flex gap-4"
                 >
-                  <div className="text-[22px] w-10 h-10 bg-white rounded-full flex items-center justify-center shrink-0 shadow-sm">
-                    {speaker?.avatar}
+                  <div className="flex items-center gap-3 mb-1">
+                    <div className="text-[20px] w-8 h-8 bg-white rounded-full flex items-center justify-center shrink-0 shadow-sm">
+                      {speaker?.avatar}
+                    </div>
+                    <p className="text-gray-900 font-medium text-[14px]">{speaker?.name}</p>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-gray-900 font-medium text-[14px] mb-0.5">{speaker?.name}</p>
+                  <div className="pl-11">
                     <p className="text-gray-600 text-[15px] leading-relaxed">{msg.message}</p>
                   </div>
                 </motion.div>

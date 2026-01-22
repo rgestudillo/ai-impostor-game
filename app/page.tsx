@@ -31,6 +31,8 @@ async function getAIResponse(
   allPlayers: Player[],
   discussion: { playerId: string; message: string }[] = []
 ): Promise<string> {
+  console.log(`\n🤖 Requesting AI ${action} for ${player.name} (${player.isImpostor ? 'IMPOSTOR' : 'crew'})`);
+  
   const response = await fetch('/api/ai', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -47,6 +49,9 @@ async function getAIResponse(
 
   if (!response.ok) throw new Error('Failed to get AI response');
   const data = await response.json();
+  
+  console.log(`✅ ${player.name}'s ${action} response: "${data.response}"`);
+  
   return data.response;
 }
 
