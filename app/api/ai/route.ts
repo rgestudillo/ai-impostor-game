@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
     const { text } = await generateText({
       model: google('gemini-2.5-flash'),
       prompt,
-      maxTokens: 100,
+      maxOutputTokens: 100,
       temperature: 0.7,
     });
 
