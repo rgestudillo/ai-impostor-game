@@ -244,9 +244,9 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-lg border-b border-neutral-100">
-        <div className="max-w-4xl mx-auto px-6 h-14 flex items-center justify-between">
-          <span className="text-black font-medium">Impostor</span>
+      <header className="fixed top-0 left-0 right-0 z-40 glass border-b border-gray-200/50">
+        <div className="max-w-5xl mx-auto px-6 h-12 flex items-center justify-between">
+          <span className="text-[15px] font-medium text-gray-800 tracking-tight">Impostor</span>
           {gameState.phase !== 'lobby' && (
             <GameControls
               onStartGame={handleStartGame}
@@ -257,37 +257,28 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="pt-14">
+      <main className="pt-12">
         {/* Lobby */}
         {gameState.phase === 'lobby' && (
           <motion.section
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="min-h-[calc(100vh-56px)] flex flex-col items-center justify-center px-6"
+            className="min-h-[calc(100vh-48px)] flex flex-col items-center justify-center px-6"
           >
-            <motion.h1
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.6 }}
-              className="text-black text-5xl sm:text-6xl font-semibold text-center mb-3 tracking-tight"
-            >
-              Impostor
-            </motion.h1>
-            
-            <motion.p
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
-              className="text-neutral-500 text-lg text-center mb-10"
-            >
-              You against three AIs
-            </motion.p>
-
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.6 }}
+              transition={{ delay: 0.1, duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+              className="text-center max-w-lg"
             >
+              <h1 className="text-gray-900 text-[56px] sm:text-[64px] font-semibold tracking-tight leading-[1.05] mb-4">
+                Impostor
+              </h1>
+              
+              <p className="text-gray-500 text-[19px] leading-relaxed mb-12">
+                A social deduction game where you play<br className="hidden sm:block" /> against three AI opponents.
+              </p>
+
               <GameControls
                 onStartGame={handleStartGame}
                 onResetGame={handleResetGame}
@@ -299,7 +290,7 @@ export default function Home() {
 
         {/* Game */}
         {gameState.phase !== 'lobby' && (
-          <section className="py-12 px-6">
+          <section className="py-16 px-6">
             <GameBoard
               gameState={gameState}
               thinkingPlayerId={thinkingPlayerId}
@@ -310,10 +301,11 @@ export default function Home() {
               {gameState.phase === 'clue-round' && isHumanTurn && humanPlayer && (
                 <motion.div
                   key="clue-input"
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="mt-12"
+                  transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+                  className="mt-16"
                 >
                   <ClueInput
                     onSubmit={handleHumanClue}
@@ -330,9 +322,9 @@ export default function Home() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="mt-12 text-center"
+                  className="mt-16 text-center"
                 >
-                  <p className="text-neutral-400">Waiting for {currentPlayer?.name}</p>
+                  <p className="text-gray-400 text-[15px]">Waiting for {currentPlayer?.name}...</p>
                 </motion.div>
               )}
 
@@ -342,19 +334,20 @@ export default function Home() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="mt-12 text-center"
+                  className="mt-16 text-center"
                 >
-                  <p className="text-neutral-400">The AIs are discussing...</p>
+                  <p className="text-gray-400 text-[15px]">The players are discussing...</p>
                 </motion.div>
               )}
 
               {gameState.phase === 'voting' && humanPlayer && (
                 <motion.div
                   key="voting"
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="mt-12"
+                  transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+                  className="mt-16"
                 >
                   <VotingPanel
                     players={gameState.players}
@@ -373,9 +366,9 @@ export default function Home() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="mt-12 text-center"
+                  className="mt-16 text-center"
                 >
-                  <p className="text-black text-lg">Revealing...</p>
+                  <p className="text-gray-800 text-[17px] font-medium">Revealing results...</p>
                 </motion.div>
               )}
             </AnimatePresence>
